@@ -22,7 +22,8 @@ static char *msg = "Time until alarm rings";
 int totTime; 
 
 
-void runTimer(int alarmTime,char *musicPath){
+void runTimer(int alarmTime,char *musicPath)
+{
 	int i = 0; 
 
 	mainwnd = initscr();				/* Start curses mode 		  */
@@ -32,31 +33,48 @@ void runTimer(int alarmTime,char *musicPath){
 	nodelay(mainwnd,1);
 	setLayout(alarmTime) ;
 	
-	for(;alarmTime > 0;) {
+	for(;alarmTime > 0;) 
+	{
 	
-		if(is_term_resized(row,col)) {
+		if(is_term_resized(row,col)) 
+		{
 			clear();
 			setLayout(alarmTime);
 
 		}
-		switch(getch()) {
-			case 'q' : curs_set(1);
-				   endwin();
-			  	   exit(0);
+		switch(getch()) 
+		{
+			case 'q'  : curs_set(1);
+				   	    endwin();
+			  	        exit(0);
 			
-			case 'h'  : runTimer(alarmTime + 3600,musicPath);
+			case 'h'  : alarmTime = alarmTime + 3600;
+				   		totTime = alarmTime; 		
+					    runTimer(alarmTime, musicPath);
 			
-			case 'm'  : runTimer(alarmTime + 60,musicPath); 
+			case 'm'  : alarmTime = alarmTime + 60;
+					   	totTime = alarmTime; 	
+						runTimer(alarmTime, musicPath);
 
-			case 'H'  : alarmTime - 3600 > 0 ? runTimer(alarmTime - 3600,musicPath) : alarmTime ;
+			case 'H'  : if (alarmTime - 3600 > 0)
+						{
+						    alarmTime = alarmTime - 3600; 
+							totTime = alarmTime;
+							runTimer(alarmTime, musicPath); 
+						}
 			
-			case 'M'  : alarmTime - 60 > 0 ? runTimer(alarmTime - 60,musicPath) : alarmTime ;
-
-			case '\n' : break ; 
+			case 'M'  : if (alarmTime - 60 > 0)
+						{
+							alarmTime = alarmTime - 60; 
+							totTime = alarmTime;
+						    runTimer(alarmTime, musicPath);	
+						}
+			case '\n' : break; 
 			
-			default   : break ;
+			default   : break;
 		}
-		if(i == 10){	
+		if(i == 10)
+		{	
 			mvprintw(2,((col/2)-4),"%02i:%02i:%02i", 
 					(alarmTime/3600)%24 , (alarmTime/60) % 60, alarmTime%60);
 			char bar[10000]; 
@@ -72,8 +90,10 @@ void runTimer(int alarmTime,char *musicPath){
 		i++;
 	}
 	endwin();				/* End curses mode		  */ 
-	if(musicPath == NULL){
-		while(1){
+	if(musicPath == NULL)
+	{
+		while(1)
+		{
 		    system("exec beep");
 		    usleep(100000);
 		}
@@ -86,11 +106,12 @@ void runTimer(int alarmTime,char *musicPath){
 	exit(ret);
 }
 
-void setLayout(int alarmTime){
+void setLayout(int alarmTime)
+{
 	getmaxyx(stdscr,row,col);
 	mvprintw(0,(col-strlen(msg))/2,"%s",msg);
 	mvprintw(2,((col/2)-4),"%02i:%02i:%02i", 
-		(alarmTime/3600)%24 , (alarmTime/60) % 60, alarmTime%60);
+		(alarmTime/3600) % 24 , (alarmTime/60) % 60, alarmTime % 60);
 	time_t rawtime;
   	struct tm * timeinfo;
   	char buffer [80];
@@ -98,7 +119,7 @@ void setLayout(int alarmTime){
   	timeinfo = localtime ( &rawtime );
  	strftime (buffer,80,"%c",timeinfo);
 	int msglen = strlen(buffer)+16; 
-	mvprintw(4,(col-msglen)/2,"This will be at %s",buffer);
+	mvprintw(4,(col-msglen)/2,"This will be at %s", buffer);
 	
 	char bar[10000]; 
     double procent = (double)alarmTime/totTime; 
@@ -110,28 +131,34 @@ void setLayout(int alarmTime){
 	refresh();
 }
 
-int main (int argc, char **argv) {
-	if(argc < 3 || argc > 4) {
+int main (int argc, char **argv) 
+{
+	if(argc < 3 || argc > 4) 
+	{
 		printf("%s\n","usage: alarm [hours] [minutes | [hours] [minutes] [config file]");
 		exit(1);
 	}
-	if(system("type mplayer")) {
+	if(system("type mplayer")) 
+	{
 		printf("This program requires that mplayer is installed\n"); 
 		exit(1) ; 		
 	}
 	char musicPath[500] ; 
 	int res = argc == 3 ? parse("config",musicPath) : parse (argv[3],musicPath) ;
 	int seconds; 		
-	if(res) {
+	if(res) 
+	{
 		printf("config errors occurred, using PC speaker\n"); 
 		seconds = atoi(*(argv+1))*3600  + atoi(*(argv+2))*60 ;
-		if(system("exec beep")){
+		if(system("exec beep"))
+		{
 			printf("can't play from PC speaker\n");
 			exit(1);
 		}
 		runTimer(seconds,NULL);
 	}
-	else { 
+	else 
+	{ 
 		seconds = atoi(*(argv+1))*3600  + atoi(*(argv+2))*60 ;
 		totTime = seconds; 
 		runTimer(seconds,musicPath);
