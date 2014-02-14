@@ -11,21 +11,21 @@
 #include "progress.h"
 
 void progressbar (char *retStr, int rowLen,double timeLeftProc) {
-	getStr(retStr,rowLen,timeLeftProc); 
+    getStr(retStr,rowLen,timeLeftProc); 
 }
 
 void getStr(char *retStr,int rowLen,double timeLeftProc) {
-	int i; 
-	retStr[0] = '|';
-    int until = (int)(rowLen*timeLeftProc); 	
+    int i; 
+    retStr[0] = '|';
+    int until = (int)(rowLen*timeLeftProc);     
 
-	for(i = 1 ; i < until; i++){
-		retStr[i] = '=' ; 	
-	}
-	retStr[i++] = '>' ;
+    for(i = 1 ; i < until; i++){
+        retStr[i] = '=' ;   
+    }
+    retStr[i++] = '>' ;
 
-	for(; i < rowLen-1 ; i++){
-		retStr[i] = ' '; 
-	}
-	retStr[rowLen-2] = '|' ; 
+    for(; i < rowLen-1 ; i++){
+        retStr[i] = ' '; 
+    }
+    retStr[rowLen-2] = '|' ; 
 }
