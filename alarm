@@ -1,11 +1,11 @@
 #!/bin/sh
 
-PROGDIR=$HOME/programming/projects/alarm
-CONFIGDIR=$HOME/programming/projects/alarm
- 
+PROGDIR=$HOME/projects/alarm
+CONFIGDIR=$HOME/projects/alarm
+
 arg3=""
 
-if [ "$2" = "" ] || [ "$4" != "" ] 
+if [ "$2" = "" ] || [ "$4" != "" ]
 	then echo "usage: alarm [hours] [minutes] | [hours] [minutes [config file]"
 		 exit
 fi
