@@ -12,9 +12,9 @@
 #include<string.h>
 #include "parse.h"
 
-enum opt {COMMENT,ERROR,EMPTY,PLAYLIST};
+enum opt {COMMENT,ERROR,EMPTY,PLAYLIST, PLAY_COMMAND, ARGS};
 
-int parse(char *path,char *musicPath){
+int parse(char *path, char *playCommand, char *playArgs, char *musicPath){
     int status = 1;
     FILE *file ;
     file = fopen(path,"r") ;
@@ -22,13 +22,18 @@ int parse(char *path,char *musicPath){
         printf("can't open config file\n");
         return 1;
     }
-    int c ;
-    char value[500];
+    char value[512];
     int opt;
     int i =  1;
-    char line[100];
+    char line[512];
     char *tmpLine;
-    while(fgets(line,100,file)){
+
+    strcpy(musicPath, "");
+    strcpy(playArgs, "");
+    strcpy(playCommand, "");
+
+
+    while(fgets(line,512,file)){
         tmpLine = line;
         while(*tmpLine != '\0' && (*tmpLine == '\n' || *tmpLine == '\r' ||
                     *tmpLine == ' '))
@@ -39,14 +44,25 @@ int parse(char *path,char *musicPath){
         switch(opt){
             case ERROR    : printf("error in config file on line %i\n",i) ; return 1;
                             break;
-            case PLAYLIST : strcpy(musicPath,value) ; status = 0;
+            case PLAYLIST : strcpy(musicPath,value);
+                            break;
+            case PLAY_COMMAND : strcpy(playCommand, value);
+                            break;
+            case ARGS : strcpy(playArgs,value);
                             break;
             default       : break;
         }
         i++;
     }
-    if(status){
+    if(musicPath == NULL || strcmp(musicPath,"") == 0){
         printf("no playlist specified\n");
+    }
+    else if (playCommand == NULL || strcmp(playCommand,"") == 0)
+    {
+        printf("no program for playing your music specified\n");
+    }
+    else {
+        status = 0;
     }
     return status;
 }
@@ -77,13 +93,18 @@ int set_options(char* line,char *value){
             printf("playlist file %s doesn't exist\n",tmpValue);
             return ERROR;
         }
-        else {  strcpy(value,tmpValue);
+        else {
+            strcpy(value,tmpValue);
             return PLAYLIST;
         }
     }
-    else {
-        printf("cant find playlist file\n");
-        return ERROR;
+    else if(strcmp(line,"PLAY_COMMAND") == 0){
+        strcpy(value,tmpValue);
+        return PLAY_COMMAND;
+    }
+    else if(strcmp(line,"ARGS") == 0){
+      strcpy(value,tmpValue);
+      return ARGS;
     }
 }
 

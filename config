@@ -1,11 +1,8 @@
-#Config file 
+#Config file
 
-#path to playlist
+#define the music player
+PLAY_COMMAND=mpv
+#define optional args for the music player (not required)
+ARGS=-shuffle -playlist
+#define a playlist
 PLAYLIST=/home/oskar/music/all.m3u
-
-
-
-
-
-
-

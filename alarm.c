@@ -12,6 +12,8 @@
 #include<stdlib.h>
 #include<string.h>
 #include<time.h>
+#include<unistd.h>
+
 #include "alarm.h"
 #include "parse.h"
 #include "progress.h"
@@ -22,7 +24,7 @@ static char *msg = "Time until alarm rings";
 int totTime;
 
 
-void runTimer(int alarmTime,char *musicPath)
+void runTimer(int alarmTime, char *playCommand, char *playArgs, char *musicPath)
 {
     int i = 0;
 
@@ -50,24 +52,25 @@ void runTimer(int alarmTime,char *musicPath)
 
             case 'h'  : alarmTime = alarmTime + 3600;
                         totTime = alarmTime;
-                        runTimer(alarmTime, musicPath);
+                        runTimer(alarmTime, playCommand, playArgs, musicPath);
 
             case 'm'  : alarmTime = alarmTime + 60;
                         totTime = alarmTime;
-                        runTimer(alarmTime, musicPath);
+                        runTimer(alarmTime, playCommand, playArgs, musicPath);
 
             case 'H'  : if (alarmTime - 3600 > 0)
                         {
                             alarmTime = alarmTime - 3600;
                             totTime = alarmTime;
-                            runTimer(alarmTime, musicPath);
+                            runTimer(alarmTime, playCommand, playArgs, musicPath);
                         }
 
             case 'M'  : if (alarmTime - 60 > 0)
                         {
                             alarmTime = alarmTime - 60;
                             totTime = alarmTime;
-                            runTimer(alarmTime, musicPath);
+                            runTimer(alarmTime, playCommand, playArgs, musicPath);
+
                         }
             case '\n' : break;
 
@@ -99,8 +102,12 @@ void runTimer(int alarmTime,char *musicPath)
         }
         exit(0);
     }
-    char sysCmd[200];
-    strcpy(sysCmd,"exec mpv -shuffle -playlist ");
+    char sysCmd[1024];
+    strcpy(sysCmd,"exec ");
+    strcat(sysCmd, playCommand);
+    strcat(sysCmd, " ");
+    strcat(sysCmd, playArgs);
+    strcat(sysCmd, " ");
     strcat(sysCmd,musicPath);
     int ret = system(sysCmd);
     exit(ret);
@@ -138,31 +145,37 @@ int main (int argc, char **argv)
         printf("%s\n","usage: alarm [hours] [minutes | [hours] [minutes] [config file]");
         exit(1);
     }
-    if(system("type mpv"))
-    {
-        printf("This program requires that mpv is installed\n");
-        exit(1) ;
+    char musicPath[512] ;
+    char playCommand[128] ;
+    char playArgs[256] ;
+    int res = argc == 3 ? parse("config",playCommand, playArgs, musicPath) :
+                parse (argv[3], playCommand, playArgs, musicPath) ;
+
+    #if DEBUG
+        printf("player is: %s\n", playCommand);
+        printf("play args is: %s\n", playArgs);
+        printf("music path is: %s\n", musicPath);
+    #endif
+
+    if(res){
+       printf("Config error occured\n");
+       exit(1);
     }
-    char musicPath[500] ;
-    int res = argc == 3 ? parse("config",musicPath) : parse (argv[3],musicPath) ;
+
+    char sysCmd[1024];
+    strcpy(sysCmd, "type ");
+    strcat(sysCmd, playCommand);
+
+    if(system(sysCmd))
+    {
+       printf("Specified play program %s not installed \n", playCommand);
+       exit(1) ;
+    }
+
     int seconds;
-    if(res)
-    {
-        printf("config errors occurred, using PC speaker\n");
-        seconds = atoi(*(argv+1))*3600  + atoi(*(argv+2))*60 ;
-        if(system("exec beep"))
-        {
-            printf("can't play from PC speaker\n");
-            exit(1);
-        }
-        runTimer(seconds,NULL);
-    }
-    else
-    {
-        seconds = atoi(*(argv+1))*3600  + atoi(*(argv+2))*60 ;
-        totTime = seconds;
-        runTimer(seconds,musicPath);
-    }
+    seconds = atoi(*(argv+1))*3600  + atoi(*(argv+2))*60 ;
+    totTime = seconds;
+    runTimer(seconds,playCommand, playArgs, musicPath);
     return 0;
 }
 
