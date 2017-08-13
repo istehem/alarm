@@ -106,6 +106,11 @@ int set_options(char* line,char *value){
       strcpy(value,tmpValue);
       return ARGS;
     }
+    else
+    {
+      printf("unknown config option\n");
+      return ERROR;
+    }
 }
 
 
