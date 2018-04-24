@@ -12,7 +12,24 @@
 #include<string.h>
 #include "parse.h"
 
-enum opt {COMMENT,ERROR,EMPTY,PLAYLIST, PLAY_COMMAND, ARGS};
+#define FOREACH_OPT(opt) \
+        opt(COMMENT)   \
+        opt(ERROR)  \
+        opt(EMPTY)   \
+        opt(PLAYLIST)  \
+        opt(PLAY_COMMAND)  \
+        opt(ARGS)  \
+
+#define GENERATE_ENUM(ENUM) ENUM,
+#define GENERATE_STRING(STRING) #STRING,
+
+enum opt {
+    FOREACH_OPT(GENERATE_ENUM)
+};
+
+static const char *OPT_STRING[] = {
+    FOREACH_OPT(GENERATE_STRING)
+};
 
 int parse(char *path, char *playCommand, char *playArgs, char *musicPath){
     int status = 1;
@@ -23,7 +40,7 @@ int parse(char *path, char *playCommand, char *playArgs, char *musicPath){
         return 1;
     }
     char value[512];
-    int opt;
+    enum opt selOpt;
     int i =  1;
     char line[512];
     char *tmpLine;
@@ -40,8 +57,8 @@ int parse(char *path, char *playCommand, char *playArgs, char *musicPath){
         {
             tmpLine++;
         }
-        opt = set_options(tmpLine,value);
-        switch(opt){
+        selOpt = set_options(tmpLine,value);
+        switch(selOpt){
             case ERROR    : printf("error in config file on line %i\n",i) ; return 1;
                             break;
             case PLAYLIST : strcpy(musicPath,value);
@@ -88,7 +105,7 @@ int set_options(char* line,char *value){
             break;
         }
     }
-    if(strcmp(line,"PLAYLIST") == 0){
+    if(strcmp(line,OPT_STRING[PLAYLIST]) == 0){
         if(fopen(tmpValue,"r")==NULL){
             printf("playlist file %s doesn't exist\n",tmpValue);
             return ERROR;
@@ -98,11 +115,11 @@ int set_options(char* line,char *value){
             return PLAYLIST;
         }
     }
-    else if(strcmp(line,"PLAY_COMMAND") == 0){
+    else if(strcmp(line,OPT_STRING[PLAY_COMMAND]) == 0){
         strcpy(value,tmpValue);
         return PLAY_COMMAND;
     }
-    else if(strcmp(line,"ARGS") == 0){
+    else if(strcmp(line,OPT_STRING[ARGS]) == 0){
       strcpy(value,tmpValue);
       return ARGS;
     }
