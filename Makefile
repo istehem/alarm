@@ -5,4 +5,4 @@ clean:
 	rm *.o
 
 debug:
-	gcc -D DEBUG -o alarm-bin -lncurses *.c
+	gcc -D DEBUG -o alarm-bin *.c -lncurses 
