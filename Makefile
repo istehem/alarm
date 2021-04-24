@@ -1,5 +1,5 @@
 all:
-	gcc -o alarm-bin -lncurses *.c
+	gcc -o alarm-bin *.c -lncurses
 
 clean:
 	rm *.o
