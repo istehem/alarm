@@ -109,6 +109,9 @@ void runTimer(int alarmTime, char *playCommand, char *playArgs, char *musicPath)
     strcat(sysCmd, playArgs);
     strcat(sysCmd, " ");
     strcat(sysCmd,musicPath);
+    #if DEBUG
+        printf("executing play command: %s\n", sysCmd);
+    #endif
     int ret = system(sysCmd);
     exit(ret);
 }
